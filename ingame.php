@@ -69,16 +69,12 @@ class ingame {
     }
 
     private function getEFUDate() {
-        //      $firstdate = getdate(mktime(0,0,0,2,10,2000)); //$ctime(Feburary 10 2000 00:00:00)
         $now = getdate();
-        //      $secondspast = $now[0] - $firstdate[0];
-        //set %currenttime $ctime
-        //set %secondspast $calc(%currenttime - %firstdate)
 
         $date_offset = -53;
 
-        $seconds = $now[0] - 18000 + ($date_offset * 24 * 60 * 60);  //set %nSeconds $calc($ctime - 18000)
-        $daysSinceEra = floor(($seconds / 86400) - 12886);  //set %nDaysSinceEra $floor($calc((%nSeconds / 86400) - 12886))
+        $seconds = $now[0] - 18000 + ($date_offset * 24 * 60 * 60);
+        $daysSinceEra = floor(($seconds / 86400) - 12886);
 
         $year = 1375;
         $month = 1;
@@ -92,7 +88,7 @@ class ingame {
             }
         }
 
-        $adjustedYear = $year - 1222; //set %adjustedYear $calc(%nYear - 1222)
+        $adjustedYear = $year - 1222;
 
         return "::[ " . $this->getDateName($daysSinceEra, $month) . " : Year " . $adjustedYear . " : " . $year . " DR ]::";
     }
