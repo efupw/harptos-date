@@ -2,97 +2,167 @@
 
 namespace EFUPW\FR;
 
+/**
+ * This class provides a static method for determining the name of a date
+ * in the Forgotten Realms Harptos calendar.
+ */
 final class HarptosDateName
 {
-    public function getDate() {
-        return $this->getEFUDate();
+    /**
+     * @var array $months A 1-indexed map of month numbers to month names.
+     */
+    private static $months = [
+         1 => 'Hammer',
+         2 => 'Alturiak',
+         3 => 'Ches',
+         4 => 'Tarsakh',
+         5 => 'Mirtul',
+         6 => 'Kythorn',
+         7 => 'Flamerule',
+         8 => 'Eleasis',
+         9 => 'Eleint',
+        10 => 'Marpenoth',
+        11 => 'Uktar',
+        12 => 'Nightal',
+    ];
+
+    /**
+     * Calculates the name of the date identified by
+     * the number of days after the specified year.
+     *
+     * There are 365 days in every year,
+     * unless the year is evenly divisible by 4;
+     * then there are 366 days,
+     * because of Shieldmeet.
+     * If `$days` is greater than the number of days in `$year`
+     * the difference will roll into the next year,
+     * and so on until a date is found.
+     *
+     * Special occasions do not canonically belong to any month.
+     * Here, except Shieldmeet,
+     * they belong to the previous month for ease of use.
+     *
+     * The return value is a string naming the resulting date in full.
+     * It includes the resulting day, month name, and year in DR.
+     * The day is either the day number of the month or a special occasion.
+     * Shieldmeet does not include the month name.
+     *
+     * Examples:
+     *
+     * ```php
+     * // "First of Hammer, 1789 DR"
+     * HarptosDateName::rollDaysForYear(1, 1789);
+     *
+     * // "Shieldmeet, 1792 DR"
+     * HarptosDateName::rollDaysForYear(366, 1792);
+     *
+     * // "First of Hammer, 1793 DR"
+     * HarptosDateName::rollDaysForYear(366, 1792);
+     * ```
+     *
+     * The result is undefined
+     * unless `$days` and `$year` are positive integers.
+     *
+     * @param int $days the number of days to offset the year by
+     * @param int $year the starting year in DR
+     * @return string the full name of the date identified by
+     * the starting year offset by the given number of days
+     */
+    public static function rollDaysForYear($days, $year) {
+        $year_length = self::yearLength($year);
+        $quadri_year_length = 4 * $year_length;
+
+        while ($days > $quadri_year_length) {
+            $days -= $quadri_year_length;
+            $year += 4;
+        }
+
+        while ($days > $year_length) {
+            $days -= $year_length;
+            ++$year;
+            $year_length = self::yearLength($year);
+        }
+
+        $month_num = 1;
+        $leap_year = $year_length === 366;
+        $month_length = self::monthLength($month_num, $leap_year);
+
+        while ($days > $month_length) {
+            $days -= $month_length;
+            ++$month_num;
+            $month_length = self::monthLength($month_num, $leap_year);
+        }
+
+        return self::dateName($days, $month_num) . ", {$year} DR";
     }
 
-    private function getMonthLength($month, $year) {
-        $fouryear = 0;
-        if (($year % 4) == 0) $fouryear = 1;
-        if ($month == 1) return 31;
-        if ($month == 4) return 31;
-        if ($month == 7) return $fouryear + 31;
-        if ($month == 9) return 31;
-        if ($month == 11) return 31;
+    /**
+     * Gets the name of the day in the month identified by the number.
+     *
+     * @param int $day_num the day number
+     * @param int $month_num the month number
+     * @return string the date name
+     */
+    private static function dateName($day_num, $month_num) {
+        if ($day_num === 32 && $month_num === 7) { return 'Shieldmeet'; }
+
+        $month = self::$months[$month_num];
+
+        if ($day_num === 31) {
+            if ($month_num ===  1) { return "Midwinter, {$month}"; }
+            if ($month_num ===  4) { return "Greengrass, {$month}"; }
+            if ($month_num ===  7) { return "Midsummer, {$month}"; }
+            if ($month_num ===  9) { return "High Harvestide, {$month}"; }
+            if ($month_num === 11) { return "Feast of the Moon, {$month}"; }
+        }
+
+        if ($day_num ===  1) { return "First of {$month}"; }
+        if ($day_num ===  2) { return "Second of {$month}"; }
+        if ($day_num ===  3) { return "Third of {$month}"; }
+        if ($day_num === 21) { return "{$month} {$day_num}st"; }
+        if ($day_num === 22) { return "{$month} {$day_num}nd"; }
+        if ($day_num === 23) { return "{$month} {$day_num}rd"; }
+
+        return "{$month} {$day_num}th";
+    }
+
+    /**
+     * Gets the number of days in the month for the month number,
+     * depending on whether it is a leap year.
+     *
+     * The return value is either 30 or 31,
+     * except for month number 7 during a leap year,
+     * which is 32.
+     *
+     * @param int $month_num the number of the month to get the length of
+     * @param bool $is_leap_year true to indicate this is a leap year
+     * @return int the number of days in the month
+     */
+    private static function monthLength($month_num, $is_leap_year) {
+        if ($month_num === 1)  { return 31; }
+        if ($month_num === 4)  { return 31; }
+        if ($month_num === 7)  { return 31 + (int) $is_leap_year; }
+        if ($month_num === 9)  { return 31; }
+        if ($month_num === 11) { return 31; }
+
         return 30;
     }
 
-    private function getMonthName($month) {
-        switch ($month) {
-        case 1: return "Hammer";
-        case 2: return "Alturiak";
-        case 3: return "Ches";
-        case 4: return "Tarsakh";
-        case 5: return "Mirtul";
-        case 6: return "Kythorn";
-        case 7: return "Flamerule";
-        case 8: return "Eleasis";
-        case 9: return "Eleint";
-        case 10: return "Marpenoth";
-        case 11: return "Uktar";
-        case 12: return "Nightal";
-        default: return "*Invalid Month*";
+    /**
+     * Gets the number of days in the specified year.
+     *
+     * The return value is 365,
+     * unless `$year` is evenly divisible by 4;
+     * then `$year` is a leap year
+     * and the return value is 366.
+     *
+     * @param int $year the year to inspect
+     * @return int the number of days in the year
+     */
+    private static function yearLength($year) {
+        if ($year % 4 === 0) {
+            return 366;
         }
-    }
-
-    private function getDateName($day, $month) {
-        if ($day == 32 && $month == 7) return "Shieldmeet";
-
-        else if ($day == 31) {
-            if ($month == 1) return "Midwinter, Hammer";
-            if ($month == 4) return "Greengrass, Tarsakh";
-            if ($month == 7) return "Midsummer, Flamerule";
-            if ($month == 9) return "High Harvestide, Eleint";
-            if ($month == 11) return "Feast of the Moon, Uktar";
-        }
-
-        else if ($day == 1) {
-            return "First of " . $this->getMonthName($month);
-        }
-        else if ($day == 2) {
-            return "Second of " . $this->getMonthName($month);
-        }
-        else if ($day == 3) {
-            return "Third of " . $this->getMonthName($month);
-        }
-        else if ($day == 21) {
-            return $this->getMonthName($month) . " " . $day . "st";
-        }
-        else if ($day == 22) {
-            return $this->getMonthName($month) . " " . $day . "nd";
-        }
-        else if ($day == 23) {
-            return $this->getMonthName($month) . " " . $day . "rd";
-        }
-        else {
-            return $this->getMonthName($month) . " " . $day . "th";
-        }
-    }
-
-    private function getEFUDate() {
-        $now = getdate();
-
-        $date_offset = -53;
-
-        $seconds = $now[0] - 18000 + ($date_offset * 24 * 60 * 60);
-        $daysSinceEra = floor(($seconds / 86400) - 12886);
-
-        $year = 1375;
-        $month = 1;
-
-        while ($daysSinceEra > $this->getMonthLength($month, $year)) {
-            $daysSinceEra = $daysSinceEra - $this->getMonthLength($month, $year);
-            $month++;
-            if ($month >= 13) {
-                $month = 1;
-                $year++;
-            }
-        }
-
-        $adjustedYear = $year - 1222;
-
-        return "::[ " . $this->getDateName($daysSinceEra, $month) . " : Year " . $adjustedYear . " : " . $year . " DR ]::";
+        return 365;
     }
 }
