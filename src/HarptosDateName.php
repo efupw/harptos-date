@@ -2,8 +2,8 @@
 
 namespace EFUPW\FR;
 
-class ingame {
-
+final class HarptosDateName
+{
     public function getDate() {
         return $this->getEFUDate();
     }
