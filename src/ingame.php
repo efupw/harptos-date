@@ -1,4 +1,7 @@
 <?php
+
+namespace EFUPW\FR;
+
 class ingame {
 
     public function getDate() {
