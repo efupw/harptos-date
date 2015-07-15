@@ -277,4 +277,47 @@ final class HarptosDate
         }
         return 365;
     }
+
+    public function getDate() {
+        return $this->getEFUDate();
+    }
+
+    private static function getMonthLength($month, $year) {
+        $fouryear = 0;
+        if (($year % 4) == 0) $fouryear = 1;
+        if ($month == 1) return 31;
+        if ($month == 4) return 31;
+        if ($month == 7) return $fouryear + 31;
+        if ($month == 9) return 31;
+        if ($month == 11) return 31;
+        return 30;
+    }
+
+    private function getEFUDate() {
+        $now = getdate();
+        $date_offset = -53;
+        $est_offset = 18000;
+        $seconds = $now[0] - $est_offset + ($date_offset * 24 * 60 * 60);
+
+        $total_days = ($seconds / 86400);
+        $day_of_sanc_start_year = 12886;
+        $daysSinceEra = floor($total_days - $day_of_sanc_start_year);
+
+        $year = 1375;
+        $month = 1;
+
+        while ($daysSinceEra > self::monthLength($month, $year)) {
+            $daysSinceEra -= self::monthLength($month, $year);
+            ++$month;
+            if ($month === 13) {
+                $month = 1;
+                ++$year;
+            }
+        }
+
+        $adjustedYear = $year - 1222;
+
+        return "::[ " . self::dateName($daysSinceEra, $month)
+            . " : Year {$adjustedYear} : {$year} DR ]::";
+    }
 }
