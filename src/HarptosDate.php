@@ -3,8 +3,31 @@
 namespace EFUPW\FR;
 
 /**
- * This class provides a static method for determining the name of a date
- * in the Forgotten Realms Harptos calendar.
+ * This class provides a simple, immutable representation of a date
+ * in the Forgotten Realms Calendar of Harptos.
+ *
+ * There are 365 days in every year,
+ * unless the year is evenly divisible by 4;
+ * then there are 366 days,
+ * because of Shieldmeet.
+ *
+ * New instances can only be created with
+ * the static factory method `yearOffsetByDays`:
+ *
+ * ```php
+ * // 1491-02-11
+ * $harptos_date = HarptosDate::yearOffsetByDays(1491, 42);
+ * ```
+ *
+ * Formally, special occasions are not associated with any months
+ * but rather lie between months.
+ * For practical purposes, and contractually,
+ * this class associates all special occasions with the *previous* month,
+ * so that some months have 31 days instead of only 30.
+ * Further, Shieldmeet, which occurs midway through every fourth year,
+ * is the 32nd (and last) day of that month.
+ *
+ * @see HarptosDate::yearOffsetByDays
  */
 final class HarptosDate
 {
@@ -27,48 +50,70 @@ final class HarptosDate
     ];
 
     /**
-     * Calculates the name of the date identified by
-     * the number of days after the specified year.
+     * @var int
+     */
+    private $year;
+
+    /**
+     * @var int
+     */
+    private $month;
+
+    /**
+     * @var int
+     */
+    private $day;
+
+    /**
+     * @var null|string
+     */
+    private $to_string;
+
+    private function __construct($year, $month, $day) {
+        $this->year = $year;
+        $this->month = $month;
+        $this->day = $day;
+    }
+
+    /**
+     * Factory method for an instance of this class.
      *
-     * There are 365 days in every year,
-     * unless the year is evenly divisible by 4;
-     * then there are 366 days,
-     * because of Shieldmeet.
+     * The resulting instance represents the Harptos date
+     * corresponding to the number of days
+     * after the start of the specified year.
+     *
      * If `$days` is greater than the number of days in `$year`
      * the difference will roll into the next year,
      * and so on until a date is found.
      *
-     * Special occasions do not canonically belong to any month.
-     * Here, except Shieldmeet,
-     * they belong to the previous month for ease of use.
-     *
-     * The return value is a string naming the resulting date in full.
-     * It includes the resulting day, month name, and year in DR.
-     * The day is either the day number of the month or a special occasion.
-     * Shieldmeet does not include the month name.
-     *
      * Examples:
      *
      * ```php
-     * // "First of Hammer, 1789 DR"
-     * HarptosDate::rollDaysForYear(1, 1789);
+     * // 1489-01-01
+     * HarptosDate::yearOffsetByDays(1489, 1);
      *
-     * // "Shieldmeet, 1792 DR"
-     * HarptosDate::rollDaysForYear(366, 1792);
+     * // 1492-07-32 (Shieldmeet)
+     * HarptosDate::yearOffsetByDays(1492, 214);
      *
-     * // "First of Hammer, 1793 DR"
-     * HarptosDate::rollDaysForYear(366, 1792);
+     * // 1493-01-01
+     * HarptosDate::yearOffsetByDays(1492, 366);
      * ```
      *
-     * The result is undefined
-     * unless `$days` and `$year` are positive integers.
-     *
+     * @param int $year the starting year in Dale Reckoning
      * @param int $days the number of days to offset the year by
-     * @param int $year the starting year in DR
-     * @return string the full name of the date identified by
-     * the starting year offset by the given number of days
+     * @return HarptosDate a date instance representing the supplied arguments
+     * @throws \InvalidArgumentException
+     * if either `$year` or `$days` is not a positive integer
      */
-    public static function rollDaysForYear($days, $year) {
+    public static function yearOffsetByDays($year, $days) {
+        if ((int) $year < 1) {
+            throw new \InvalidArgumentException('Year number must be positive');
+        }
+
+        if ((int) $days < 1) {
+            throw new \InvalidArgumentException('Days number must be positive');
+        }
+
         $year_length = self::yearLength($year);
         $quadri_year_length = 4 * $year_length;
 
@@ -93,7 +138,74 @@ final class HarptosDate
             $month_length = self::monthLength($month_num, $leap_year);
         }
 
-        return self::dateName($days, $month_num) . ", {$year} DR";
+        return new self($year, $month_num, $days);
+    }
+
+    /**
+     * Gets the Dale Reckoning year of this instance.
+     *
+     * @return int the year in DR
+     */
+    public function getYear() {
+        return $this->year;
+    }
+
+    /**
+     * Gets the month number of this instance.
+     *
+     * The range of values is [1; 12].
+     *
+     * @return int the month number of the year
+     * @see getMonthName
+     */
+    public function getMonth() {
+        return $this->month;
+    }
+
+    /**
+     * Gets the human friendly name of this instance's month.
+     *
+     * @return string the month name
+     * @see getMonth
+     */
+    public function getMonthName() {
+        return self::$months[$this->month];
+    }
+
+    /**
+     * Gets the day number in the month of this instance.
+     *
+     * The range of values depends on the month and the year:
+     *
+     * * It is normally [1; 30].
+     * * It is [1; 31] if a special occasion follows the month;
+     * the 31st is the special occasion.
+     * * It is [1; 32] if 4 evenly divides the year and `getMonth()` returns 7;
+     * the 32nd is Shieldmeet.
+     *
+     * @return int the day number of the month
+     */
+    public function getDay() {
+        return $this->day;
+    }
+
+    /**
+     * Pretty-prints this date.
+     *
+     * The return value is suitable for human consumption.
+     * It normally includes the day, the month, and the year;
+     * special occasions never include the day
+     * and Shieldmeet only includes the year.
+     *
+     * @return string a human friendly string representation
+     */
+    public function __toString() {
+        if (!$this->to_string) {
+            $this->to_string = self::dateName($this->day, $this->month)
+                . ", {$this->year} DR";
+        }
+
+        return $this->to_string;
     }
 
     /**

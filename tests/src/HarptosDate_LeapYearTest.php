@@ -10,70 +10,78 @@ final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
      * @dataProvider firstDaysOfMonthProvider
      */
     public function testFirstDaysOfMonth($day, $month_name) {
-        $result = self::rollDays($day);
+        $result = HarptosDate::yearOffsetByDays(self::SOME_LEAP_YEAR, $day);
 
-        $this->assertStringStartsWith("First of {$month_name}", $result);
+        $this->assertEquals(1, $result->getDay());
+        $this->assertEquals($month_name, $result->getMonthName());
     }
 
     public function testDay31IsMidwinter() {
         $day = 31;
 
-        $result = self::rollDays($day);
-        $this->assertContains('Midwinter', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertContains('Midwinter', $result->__toString());
     }
 
     public function testDay122IsGreengrass() {
         $day = 122;
 
-        $result = self::rollDays($day);
-        $this->assertContains('Greengrass', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertContains('Greengrass', $result->__toString());
     }
 
     public function testDay213IsMidsummer() {
         $day = 213;
 
-        $result = self::rollDays($day);
-        $this->assertContains('Midsummer', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertContains('Midsummer', $result->__toString());
     }
 
     public function testDay214IsShieldmeet() {
         $day = 214;
 
-        $result = self::rollDays($day);
-        $this->assertStringStartsWith('Shieldmeet', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertStringStartsWith('Shieldmeet', $result->__toString());
     }
 
     public function testDay215IsFirstOfEleasis() {
         $day = 215;
 
-        $result = self::rollDays($day);
-        $this->assertStringStartsWith('First of Eleasis', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertEquals(1, $result->getDay());
+        $this->assertEquals('Eleasis', $result->getMonthName());
     }
 
     public function testDay275IsHighHarvestide() {
         $day = 275;
 
-        $result = self::rollDays($day);
-        $this->assertContains('High Harvestide', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertContains('High Harvestide', $result->__toString());
     }
 
     public function testDay336IsFeastOfTheMoon() {
         $day = 336;
 
-        $result = self::rollDays($day);
-        $this->assertContains('Feast of the Moon', $result);
+        $result = self::offsetDays($day);
+
+        $this->assertContains('Feast of the Moon', $result->__toString());
     }
 
     public function testDay366Is30thOfNightalSameYear() {
         $day = 366;
         $some_leap_year = 1376;
 
-        $result = HarptosDate::rollDaysForYear(
-            $day, $some_leap_year);
+        $result = HarptosDate::yearOffsetByDays($some_leap_year, $day);
 
-        $this->assertStringStartsWith(
-            "Nightal 30th, {$some_leap_year}",
-            $result);
+        $this->assertEquals($some_leap_year, $result->getYear());
+        $this->assertEquals(12, $result->getMonth());
+        $this->assertEquals(30, $result->getDay());
     }
 
     public function testDay367IsFirstOfHammerNextYear() {
@@ -81,12 +89,12 @@ final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1384;
         $following_year = $some_starting_leap_year + 1;
 
-        $result = HarptosDate::rollDaysForYear(
-            $day, $some_starting_leap_year);
+        $result = HarptosDate::yearOffsetByDays(
+            $some_starting_leap_year, $day);
 
-        $this->assertStringStartsWith(
-            "First of Hammer, {$following_year}",
-            $result);
+        $this->assertEquals($following_year, $result->getYear());
+        $this->assertEquals(1, $result->getMonth());
+        $this->assertEquals(1, $result->getDay());
     }
 
     public function testDay1461Is30thOfNightalThreeYearsLater() {
@@ -94,12 +102,12 @@ final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1388;
         $three_years_later = $some_starting_leap_year + 3;
 
-        $result = HarptosDate::rollDaysForYear(
-            $day, $some_starting_leap_year);
+        $result = HarptosDate::yearOffsetByDays(
+            $some_starting_leap_year, $day);
 
-        $this->assertStringStartsWith(
-            "Nightal 30th, ${three_years_later}",
-            $result);
+        $this->assertEquals($three_years_later, $result->getYear());
+        $this->assertEquals(12, $result->getMonth());
+        $this->assertEquals(30, $result->getDay());
     }
 
     public function testDay1462IsFirstOfHammerFourYearsLater() {
@@ -107,12 +115,12 @@ final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1388;
         $four_years_later = $some_starting_leap_year + 4;
 
-        $result = HarptosDate::rollDaysForYear(
-            $day, $some_starting_leap_year);
+        $result = HarptosDate::yearOffsetByDays(
+            $some_starting_leap_year, $day);
 
-        $this->assertStringStartsWith(
-            "First of Hammer, ${four_years_later}",
-            $result);
+        $this->assertEquals($four_years_later, $result->getYear());
+        $this->assertEquals(1, $result->getMonth());
+        $this->assertEquals(1, $result->getDay());
     }
 
     public function firstDaysOfMonthProvider() {
@@ -132,8 +140,11 @@ final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    private static function rollDays($day) {
-        return HarptosDate::rollDaysForYear(
-            $day, self::SOME_LEAP_YEAR);
+    /**
+     * @param int $days the number of days to add to `self::SOME_NON_LEAP_YEAR`.
+     * @return HarptosDate
+     */
+    private static function offsetDays($days) {
+        return HarptosDate::yearOffsetByDays(self::SOME_LEAP_YEAR, $days);
     }
 }
