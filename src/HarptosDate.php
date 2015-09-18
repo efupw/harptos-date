@@ -6,7 +6,7 @@ namespace EFUPW\FR;
  * This class provides a static method for determining the name of a date
  * in the Forgotten Realms Harptos calendar.
  */
-final class HarptosDateName
+final class HarptosDate
 {
     /**
      * @var array $months A 1-indexed map of month numbers to month names.
@@ -51,13 +51,13 @@ final class HarptosDateName
      *
      * ```php
      * // "First of Hammer, 1789 DR"
-     * HarptosDateName::rollDaysForYear(1, 1789);
+     * HarptosDate::rollDaysForYear(1, 1789);
      *
      * // "Shieldmeet, 1792 DR"
-     * HarptosDateName::rollDaysForYear(366, 1792);
+     * HarptosDate::rollDaysForYear(366, 1792);
      *
      * // "First of Hammer, 1793 DR"
-     * HarptosDateName::rollDaysForYear(366, 1792);
+     * HarptosDate::rollDaysForYear(366, 1792);
      * ```
      *
      * The result is undefined

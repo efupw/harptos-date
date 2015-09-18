@@ -2,7 +2,7 @@
 
 namespace EFUPW\FR;
 
-final class HarptosDateName_RegularYearTest extends \PHPUnit_Framework_TestCase
+final class HarptosDate_RegularYearTest extends \PHPUnit_Framework_TestCase
 {
     const SOME_NON_LEAP_YEAR = 1377;
 
@@ -61,7 +61,7 @@ final class HarptosDateName_RegularYearTest extends \PHPUnit_Framework_TestCase
         $day = 365;
         $some_regular_year = 1377;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_regular_year);
 
         $this->assertStringStartsWith(
@@ -74,7 +74,7 @@ final class HarptosDateName_RegularYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_regular_year = 1386;
         $following_year = $some_starting_regular_year + 1;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_starting_regular_year);
 
         $this->assertStringStartsWith(
@@ -87,7 +87,7 @@ final class HarptosDateName_RegularYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_regular_year = 1389;
         $four_years_later = $some_starting_regular_year + 4;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_starting_regular_year);
 
         $this->assertStringStartsWith(
@@ -113,7 +113,7 @@ final class HarptosDateName_RegularYearTest extends \PHPUnit_Framework_TestCase
     }
 
     private static function rollDays($day) {
-        return HarptosDateName::rollDaysForYear(
+        return HarptosDate::rollDaysForYear(
             $day, self::SOME_NON_LEAP_YEAR);
     }
 }

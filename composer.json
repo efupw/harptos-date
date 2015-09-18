@@ -1,6 +1,6 @@
 {
-    "name": "efupw/harptos-date-name",
-    "description": "Gets the Forgotten Realms Harptos-calendar date name of a day in a year.",
+    "name": "efupw/harptos-date",
+    "description": "Simple, immutable representation of a Forgotten Realms Calendar of Harptos date.",
     "license": "MIT",
     "autoload": {
         "psr-4": {

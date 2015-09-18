@@ -2,7 +2,7 @@
 
 namespace EFUPW\FR;
 
-final class HarptosDateName_AnyYearTest extends \PHPUnit_Framework_TestCase
+final class HarptosDate_AnyYearTest extends \PHPUnit_Framework_TestCase
 {
     const SOME_YEAR = 1377;
 
@@ -66,7 +66,7 @@ final class HarptosDateName_AnyYearTest extends \PHPUnit_Framework_TestCase
         $some_leap_year = 1380;
 
         for ($day = 1; $day <= 366; ++$day) {
-            $result = HarptosDateName::rollDaysForYear(
+            $result = HarptosDate::rollDaysForYear(
                 $day, $some_leap_year);
             $this->assertStringEndsWith(' DR', $result);
         }
@@ -76,14 +76,14 @@ final class HarptosDateName_AnyYearTest extends \PHPUnit_Framework_TestCase
         $some_leap_year = 1380;
 
         for ($day = 1; $day <= 366; ++$day) {
-            $result = HarptosDateName::rollDaysForYear(
+            $result = HarptosDate::rollDaysForYear(
                 $day, $some_leap_year);
             $this->assertContains("$some_leap_year", $result);
         }
     }
 
     private static function rollDays($day) {
-        return HarptosDateName::rollDaysForYear(
+        return HarptosDate::rollDaysForYear(
             $day, self::SOME_YEAR);
     }
 }

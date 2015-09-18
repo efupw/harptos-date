@@ -2,7 +2,7 @@
 
 namespace EFUPW\FR;
 
-final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
+final class HarptosDate_LeapYearTest extends \PHPUnit_Framework_TestCase
 {
     const SOME_LEAP_YEAR = 1376;
 
@@ -68,7 +68,7 @@ final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
         $day = 366;
         $some_leap_year = 1376;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_leap_year);
 
         $this->assertStringStartsWith(
@@ -81,7 +81,7 @@ final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1384;
         $following_year = $some_starting_leap_year + 1;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_starting_leap_year);
 
         $this->assertStringStartsWith(
@@ -94,7 +94,7 @@ final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1388;
         $three_years_later = $some_starting_leap_year + 3;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_starting_leap_year);
 
         $this->assertStringStartsWith(
@@ -107,7 +107,7 @@ final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
         $some_starting_leap_year = 1388;
         $four_years_later = $some_starting_leap_year + 4;
 
-        $result = HarptosDateName::rollDaysForYear(
+        $result = HarptosDate::rollDaysForYear(
             $day, $some_starting_leap_year);
 
         $this->assertStringStartsWith(
@@ -133,7 +133,7 @@ final class HarptosDateName_LeapYearTest extends \PHPUnit_Framework_TestCase
     }
 
     private static function rollDays($day) {
-        return HarptosDateName::rollDaysForYear(
+        return HarptosDate::rollDaysForYear(
             $day, self::SOME_LEAP_YEAR);
     }
 }
