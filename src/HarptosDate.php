@@ -282,40 +282,56 @@ final class HarptosDate
         return $this->getEFUDate();
     }
 
-    private static function getMonthLength($month, $year) {
-        $fouryear = 0;
-        if (($year % 4) == 0) $fouryear = 1;
-        if ($month == 1) return 31;
-        if ($month == 4) return 31;
-        if ($month == 7) return $fouryear + 31;
-        if ($month == 9) return 31;
-        if ($month == 11) return 31;
-        return 30;
-    }
-
     private function getEFUDate() {
         $now = getdate();
         $date_offset = -53;
         $est_offset = 18000;
         $seconds = $now[0] - $est_offset + ($date_offset * 24 * 60 * 60);
 
+        $d = new \DateTime();
+        $d->setTimezone(new \DateTimeZone('America/Chicago'));
+        $d->sub(\DateInterval::createFromDateString('53 days'));
+
+        var_dump($now);
+        var_dump($d->format('Y-m-d H:i:s Z'));
+
         $total_days = ($seconds / 86400);
+
+        var_dump($seconds);
+        var_dump((int)$d->format('U'));
+
+        var_dump($total_days);
+        var_dump(((int)$d->format('U')) / 86400);
+
         $day_of_sanc_start_year = 12886;
         $daysSinceEra = floor($total_days - $day_of_sanc_start_year);
 
+        $d->sub(\DateInterval::createFromDateString("$day_of_sanc_start_year days"));
+        $d2 = floor($d->format('U') / 86400);
+
+        var_dump($daysSinceEra);
+        var_dump($d2);
+
+
+        // $d2 goes nightal 29th -> hammer 1st
+        $daysSinceEra = $d2 = 1461;
         $year = 1375;
         $month = 1;
+        $is_leap = ($year % 4 === 0);
 
-        while ($daysSinceEra > self::monthLength($month, $year)) {
-            $daysSinceEra -= self::monthLength($month, $year);
+        while ($daysSinceEra > self::monthLength($month, $is_leap)) {
+            $daysSinceEra -= self::monthLength($month, $is_leap);
             ++$month;
             if ($month === 13) {
                 $month = 1;
                 ++$year;
+                $is_leap = ($year % 4 === 0);
             }
         }
 
         $adjustedYear = $year - 1222;
+
+        var_dump(''.self::yearOffsetByDays(1375, $d2));
 
         return "::[ " . self::dateName($daysSinceEra, $month)
             . " : Year {$adjustedYear} : {$year} DR ]::";
